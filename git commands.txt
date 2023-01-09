@@ -1,0 +1,409 @@
+      creating a working directory, initializing git and pushing code files to github
+      -------------------------------------------------------------------------------
+to create a working directory
+use:
+mkdir <any directory name>
+cd <directory name>
+
+to initialize the directory
+use:
+git init
+
+to create code files 
+use:
+nano code.txt
+nano log.txt
+nano output.txt
+
+     to get git status information on stage process
+use:
+git status
+   
+  to stage code file
+use:
+
+git add . (this is to commit all)
+git add <then the code file name as many name as possible use >  (this is for a single file or as many as posible)
+
+to commit the staged code file 
+use:
+git commit -m "first comit"
+
+next we need to add the remote github url
+use:
+git remote add origin <and github repository url>
+
+
+to finally push our commit or changes of code file to remote repo 
+use:
+git push origin <the name of the branch we want to push>
+
+it will require github (account name) and (token as password)
+
+  
+
+
+   creating a branch / using stash and unstash
+   ------------------------------------------=
+to create a branch *to create a branch i need to first stage and commit a file only then will i be able to create another branch)
+to create a branch
+use:
+git branch <the branch name>
+
+to delete a branch locally
+use:
+git branch -D <branch name>
+
+to delete a branch remotely 
+use: 
+git push origin --delete <branch name>
+
+to get list of branch
+use:
+git branch
+
+to checkout to another branch 
+use:
+git checkout <branch name>
+
+to stash means to put an unfinish file on hold in a branch to switch to another branch and when i return to the stashed branch i can unstash)
+we need to stage a file first before we can stash
+use: git add <file name>
+
+then to stash
+use:
+git stash
+
+to unstash
+use:
+git stash pop
+
+to merge branch always remember to be in the branch i want it to merge too)
+to merge branch to master or another 
+use:
+git merge <branch name to merge with>
+
+     gitflow workflow architecture
+------------------------------------------
+
+to create a git flow work flow we neen to create the following branches
+
+the master branch have to stand alone until we are done with coding that is ready for release.
+:
+master branch
+
+develop branch   (is our tempoary master branch it was branch form the original master branch)
+
+feature branch   (depending on how many souce-code and developers need to work we create according to
+                   requirement example feature1 feature2 as so on and so fort)
+
+when the developers are done with their coding on feature branch they can then push the code to
+release branch . our release branch should branch out of our develop branch after testing the code
+from the release branch . it can then be pushed to the main master branch for production.
+
+hotfix branch  (this is branched out of the main master branch for quick fix if an error or bug was discover in
+                 the new code after deployment.
+
+
+       merging and solving conflicts
+       -----------------------------
+to merge a branch to another 
+use:
+git merge <name of the branch we want to merge>
+
+to merge a conflict
+use:
+git mergetool
+
+
+
+       cloning and pulling
+       ------------------
+to clone
+use:
+git clone <github url>
+
+to pull 
+use:
+git pull <github url>
+
+
+
+
+
+
+
+
+
+ 2  mkdir git
+    3  cd git
+    4  git inti
+    5  git init
+    6  nano code.txt
+    7  nano log.txt
+    8  nano output.txt
+    9  ls
+   10  git status
+   11  git add code.txt output.txt
+   12  git commit -m "first commit"
+   13  git push origin master
+   14  git remote add git@github.com:drakeade/git-session.git
+   15  git remote add origin git@github.com:drakeade/git-session.git
+   16  ssh-keygen
+   17  cd .ssh/
+   18  sudo cd .ssh/
+   19  ls
+   20  cd ..
+   21  cd .ssh/
+   22  ls
+   23  cat id_rsa.pub
+   24  cd ..
+   25  cd main
+   26  ls
+   27  cd git
+   28  ls
+   29  git push origin master
+   30  history
+   31  clear
+   32  cd ..
+   33  sudo rm -rf git
+   34  ls
+   35  mkdir git
+   36  cd git
+   37  git init
+   38  nano feature1.txt
+   39  nano feature2.txt
+   40  git branch develop
+   41  git branch feature1
+   42  ls
+   43  git add feature1.txt feature2.txt
+   44  git branch develop
+   45  git commit -m "first commit"
+   46  git branch develop
+   47  git branch feature1
+   48  git branch feature2
+   49  git checkout develop
+   50  nano develop.txt
+   51  git stash
+   52  git add .
+   53  git stash
+   54  git checkout feature1
+   55  nano new.txt
+   56  git add .
+   57  git commit -m "feature1 commit"
+   58  git checkout develop
+   59  ls
+   60  git unstash
+   61  git stash pop
+   62  git commit -m "first develop commit"
+   63  git remote add origin git@github.com:drakeade/git-session.git
+   64  git push origin master
+   65  git branch
+   66  git push origin develop
+   67  git branch feature1
+   68  git checkout feature1
+   69  ls
+   70  git push origin feature1
+   71  git checkout feature2
+   72  ls
+   73  git push origin feature2
+   74  cd
+   75  ls
+   76  sudo rm -rf git
+   77  ls
+   78  mkdir git
+   79  cd git
+   80  git init
+   81  nano main.txt
+   82  git add .
+   83  git commit -m "first master commit"
+   84  git branch develop
+   85  git branch F1
+   86  hit branch f2
+   87  git branch f2
+   88  ckear
+   89  clear
+   90  git checkout develop
+   91  nano develop.txt
+   92  git checkout F1
+   93  nano f1.txt
+   94  git branch f2
+   95  git checkout f2
+   96  ls
+   97  nano f2.txt
+   98  git add .
+   99  git commit -m "f2 commit"
+  100  git checkout F1
+  101  ls
+  102  nano f1.txt
+  103  git add .
+  104  git commit -m "f1 first commit"
+  105  git checkou develop
+  106  git branch
+  107  git checkout develop
+  108  ls
+  109  nano develop.txt
+  110  git add .
+  111  git commit -m "develop first commit"
+  112  git checkout master
+  113  ls
+  114  git status
+  115  git remote add origin git@github.com:drakeade/git-session.git
+  116  git push origin master
+  117  git checkout develop
+  118  ls
+  119  git push origin develop
+  120  git checkout F1
+  121  ls
+  122  git push origin F1
+  123  git checkout origin f2
+  124  git checkout f2
+  125  git push origin f2
+  126  git checkout master
+  127  git branch -D f2
+  128  git branch
+  129  cd
+  130  sudo rm -rf git
+  131  ls
+  132  clear
+  133  mkdir git
+  134  cd git
+  135  git init
+  136  nano master.txt
+  137  git add .
+  138  git commit - "first master commit"
+  139  git commit -m "first master commit"
+  140  git branch public1
+  141  git branch public2
+  142  git branch private
+  143  git checkout public1
+  144  nano public1.txt
+  145  git add .
+  146  git commit -m "pulic1 commit"
+  147  git checkout master
+  148  git merge public1
+  149  git merge public2
+  150  git branch
+  151  ls
+  152  git checkout private
+  153  ls
+  154  nano master.txt
+  155  git add .
+  156  git commit -m "private first commit"
+  157  git checkout public1
+  158  git merge private
+  159  git checkout public2
+  160  git merge private
+  161  git status
+  162  git checkout master
+  163  git merge private
+  164  git checkout private
+  165  git merge master
+  166  git merge public1
+  167  git merge public2
+  168  ls
+  169  cat master.txt
+  170  nano  public1.txt
+  171  cd
+  172  sudo rm -rf git
+  173  ls
+  174  clear
+  175  mkdir git
+  176  cd git
+  177  git init
+  178  main.txt
+  179  nano main.txt
+  180  git add .
+  181  git commit -m "main commit"
+  182  clear
+  183  git branch develop
+  184  git checkout develop
+  185  ls
+  186  git branch feature1
+  187  git checkout feature1
+  188  ls
+  189  nano main.txt
+  190  git add .
+  191  git commit -m "feature1 job done"
+  192  git branch
+  193  git branch develop
+  194  git checkout develop
+  195  ls
+  196  nano main,txt
+  197  ls
+  198  cat main.txt
+  199  git branch release
+  200  git checkout release
+  201  git merge feature
+  202  git merge feature1
+  203  git checkout master
+  204  git release
+  205  git merge release
+  206  git branch
+  207  git branch hotfix
+  208  git checkout hotfix
+  209  ls
+  210  cat main.txt
+  211  nano main.txt
+  212  git add .
+  213  git commit -m "hotfix commit"
+  214  git checkout master
+  215  ls
+  216  cat main.txt
+  217  git merge hotfix
+  218  cat main.txt
+  219  git remote add origin git@github.com:drakeade/git-session.git
+  220  git push oringin master
+  221  git push origin master
+  222  git checkout develop
+  223  ls
+  224  cat main.txt
+  225  git checkout feature1
+  226  cat main.txt
+  227  git checkout release
+  228  cat main.txt
+  229  git checkout master
+  230  cat main.txt
+  231  git checkout git checkout hotfix
+  232  git checkout hotfix
+  233  cat main.txt
+  234  cd
+  235  sudo rm -rf git
+  236  ls
+  237  mkdir git
+  238  cd git
+  239  git init
+  240  git remote add origin git@github.com:drakeade/merge-conflict.git
+  241  git pull
+  242  git pull git@github.com:drakeade/merge-conflict.git
+  243  ls
+  244  nano main.c
+  245  git branch
+  246  git branch feature1
+  247  git checkout feature1
+  248  ls
+  249  feature1.txt
+  250  nano feature1.txt
+  251  ls
+  252  nano main.c
+  253  nano feature1.txt
+  254  git add .
+  255  git commit -m "pulic branch commit"
+  256  git checkout master
+  257  git branch featur2
+  258  git checkout feature2
+  259  git checkout featur2
+  260  ls
+  261  nano main.c
+  262  nano feature2.txt
+  263  git add .
+  264  git commit -m "feature2 commit"
+  265  git checkout master
+  266  git merge feature1
+  267  git merge featur2
+  268  ls
+  269  git push origin master
+  270  git checkout feature1
+  271  git push origin feature1
+  272  git checkout featur2
+  273  git push origin featur2

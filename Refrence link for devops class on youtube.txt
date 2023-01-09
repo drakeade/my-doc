@@ -1,0 +1,20 @@
+FREE DEVOPS BOOTCAMP REAL TIME SESSIONS:
+
+SESSION 1 - https://youtu.be/b3DXnnqTqt4 [ CICD ]
+
+SESSION 2 - https://youtu.be/BDAIjUShvSw [ CICD ADVANCED ]
+
+SESSION 3 - https://youtu.be/E_Y-n3uYU48 [ DOCKER ]
+
+SESSION 4 - https://youtu.be/lcStDbAGvdw [ KUBERNETES ]
+
+SESSION 5 - https://youtu.be/cKuWgNnBiLQ  [ SHELL SCRIPTING ]
+
+SESSION 6 - https://youtu.be/wqaiKBkhc4I [ MONITORING ]
+
+SESSION 7 - https://youtu.be/G4G4oxhQFuY [ RED HAT LINUX ]
+
+SESSION 8 - https://youtu.be/ck2RzXWH3h0 [ AWS ]
+
+SESSION 9 - https://youtu.be/jcTmAwrusYw [ RED HAT ANSIBLE ]
+

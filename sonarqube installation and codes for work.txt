@@ -1,0 +1,284 @@
+     sonarqube
+     ----------
+sonarqube default firewall-port :9000 open
+
+intallaton
+----------
+1) install docker and pull sonarqube image
+2) setpup sonarqube on the browser
+3) download smaple code and analyze it on sonarqube
+
+to install sonarqube with aws
+use:
+
+go to ami market place.
+pre-requsite
+
+i) select centos , select t2.midum  (because our requirement needs atleast 2GB of RAM
+login into putty as : centos
+then:
+
+sudo su
+yum install wget -y
+
+use:
+//install required packages.
+sudo yum install -y yum-utils \
+device-mapper-persistent-data \1
+1vm2
+
+//use the following command to set up the stable repository.
+sudo yum-config-manager \
+     --add-repo \
+     https://download.docker.com/linux/centos/docker-ce.repo
+
+//INSTALL DOCKER ENGINE - COMMUNITY
+sudo yum install docker-ce docker-ce-cli containerd.io
+
+to check docker status if it is installed
+use:
+systemctl status docker
+
+if it status is inactive
+use:
+systemctl start docker
+
+sudo docker pull sonarqube:latest
+
+sudo docker images
+
+to run the container
+use:
+ sudo docker run -it -d -p 9000:9000 --name <container name (sonarqube)> sonarqube:latest
+
+sudo docker ps 
+
+to acces sonarqube we have to go to the browser 
+use:
+<public ip address>:9000
+
+after the dashboard appear we have sucessfully installed sonarqube.
+
+
+               sonarqube handson
+               -----------------
+1) instal git and clone the sample project form the given link
+
+to do that we need to install git first on same server to get project git url.
+use:
+sudo yum install -y git
+git clone <git project url>
+ls
+cd <project name>
+ls
+
+next sonarqube user and login
+
+go to the sonarqube dashboard,
+click on login the default :
+username : admin
+password : admin
+
+and it will login
+next
+
+click on create new project
+in the title project key-> insert any name tehn click on setup
+
+next Generate a token-> insert any name (generate the tokken and copy it store safely in project documentation on notepad
+and click on continue .
+
+then choose projects main language-> either java,c= or v8NET etc.
+
+the choose my developing bild tool -> select maven
+
+then copy the (Execute the scanner for maven from my computer)
+copy thr text file that shows up
+
+before we use the text file we need to install java & maven
+
+next
+
+2) install java & maven
+in refrece to why we need maven is because when we are using our sonaqube for analysis
+we need maven to first compile the code.
+we will be using maven as a compiler and sonarqube as an analizer
+
+use:
+to compile this code we need apache-maven if it is maven project
+use: 
+go to brower and search for apache maven go to downloads copy the tar.gz binary download.
+link.
+
+then install the apache -maven
+use:
+cd <project name>
+ls
+cd /opt
+then
+wget <maven installation link>
+ls
+
+then untar the apache-maven
+use:
+tar zxf apache-maven-3.6.2-bin.tar.gz
+ls
+cd apache-maven-3.6.2.
+ls
+cd bin
+next  install java in bin
+use:
+yum install java-1.8.0-openjdk-devel
+
+to check if maven is still inside bin working 
+use:
+./mvn -version
+
+for now apache-maven is only available on this directory to make it accessible by all the os
+use:
+export PATH=$PATH:/opt/apache-maven-3.6.2/bin
+
+done.
+
+cd /home/centos/<roject directory>/
+
+3)configure sonar.properties & connect maven to sonarQube
+
+ls
+nano sonar-project.properties
+but if i dont have the sonar-project-properties i will have to create the file.
+this file is actually used to configure our neta data once i confirmed it has the correct
+information i will checkout.
+
+to the final part number 4)
+       
+4) compile and build the sample file using the sonar code from browser
+
+mvn compile
+and it will be sucessfull
+
+now go to the sonarqube dashboard and copy the text from the execute the scanner for maven from you computer text
+that was brought out in hands on number (1) part.
+and paste it on the server this text or code will prompt sonarqube will analyze the project.
+once it finsih to analize the project.
+
+now go to sonarqube dashboard once we click on the name of the project we will get the overview
+of our analyzed project
+
+
+                    integrate sonarqube with jenkins
+                    --------------------------------
+pre-requisites to integrate sonarqube with jenkins
+
+setup a Sonarqube Server 
+setup a Jenkins server 
+
+Integration Steps
+
+On Sonarqube server:
+Generate a sonarqube token to authenticate from Jenkins
+
+On Jenkins server:
+Install Sonarqube plugin
+Configure Sonarqube credentials
+Add Sonarqube to jenkins "configure system"
+Install SonarScanner
+Run Pipeline job
+🧹 CleanUp
+Stop sonarqube services and delete the instance Stop Jenkins service and delete the instance
+
+we need to install jenkins in same server 
+use:
+
+after installing jenkins
+then:
+in jenkins plugin manager -> click on ->available and install -> (sonarqube scanner for jenkins)
+
+after that to configure sonarqube and jenkins 
+go to-> manage jenkins -> configure system-> scroll down to sonarqube section .
+check the first checkbox(environmet variables) that appear under sonarqube section
+
+then under sonarqube server the second section click on add sonarqube server.
+give it any name in the name input section as ->sq1
+give server url will be sonarqube url -> <http://<privateip:9000 
+add token : will click on add 
+
+under add credentials select kind -> (secret text) then on the secret input section paste
+the token . on the ID input -> (jenkins-sonar)
+and the discrition input -> (jenkins sonar)
+after creating the server authentication select it as the (server authentication token)
+then apply and save
+
+next install sonarqube scanner
+go to jenkins dashboard-> go to Global configuration, scroll down to (sonarqube scanner)
+add sonarqube scanner) and choose install automatically. then in the name space -> (give the exact name and version of 
+sonarqube scanner i see below. apply and save.
+
+
+next go back to jenkins dashboard and create a test job.
+
+enter name for job-> (sonarqube-pipeline)
+select -> piplinee
+click ok
+
+then scroll down to (pipeline) section
+select -> pipeline script 
+
+paste pipeline script and make the necessary changes on script like.
+i) maven path : to get maven path go to maven on server and use: maven -version.
+ii) git code : change the url to the project url.
+ii
+use:
+pipeline{
+    agent any
+    environment {
+        PATH = "$PATH:/opt/apache-maven-3.8.2/bin"
+    }
+    stages{
+       stage('GetCode'){
+            steps{
+                git 'https://github.com/ravdy/javaloginapp.git'
+            }
+         }        
+       stage('Build'){
+            steps{
+                sh 'mvn clean package'
+            }
+         }
+        stage('SonarQube analysis') {
+//    def scannerHome = tool 'SonarScanner 4.0';
+        steps{
+        withSonarQubeEnv('sonarqube-8.9') { 
+        // If you have configured more than one global server connection, you can specify its name
+//      sh "${scannerHome}/bin/sonar-scanner"
+        sh "mvn sonar:sonar"
+    }
+        }
+        }
+       
+    }
+}
+
+apply and save
+
+now lets click on build now
+when build is succesfull
+ let check our sonar on browser when we click on Sonaqube we can see our demo project
+click on it see overview issues and all the analysis and bugs
+
+     not necessary
+configuration . on sonarqube dashboard click on administration -> then
+click on configuration -> and the option shows select webhooks
+click on create to create webhook
+insert name as jenkins
+insert url -> (http://jenkins:8080/sonarqube-webhook/
+dont insert any secret and click on create
+
+after the webhook is created sonarqube automatically sends webhook request to jenkins
+.
+
+to get more understanding on sonarqube check the documentaion on browser ->search jenkins intergration
+https://docs.sonarqube.org/latest/analyzing-source-code/scanners/jenkins-extension-sonarqube/
+
+
+

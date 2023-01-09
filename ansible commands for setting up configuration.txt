@@ -1,0 +1,436 @@
+installing ansible on master server (run this installation only on master node or server)
+=======================================================================================
+      sudo apt-get update
+      sudo apt install software-properties-common
+      sudo apt-add-repository ppa:ansible/ansibl
+      sudo apt-add-repository ppa:ansible/ansible
+      sudo apt update
+      sudo apt install ansible
+      ansible --version
+
+  installing python3 on host servers for ansible connection
+--------------------------------------------------------
+on host servers or slaves run this installation 
+use:
+sudo apt-get update
+sudo apt-get install python3
+   
+next step
+
+(on master configure the default ansible file and add host's)
+use:
+   cd /etc/ansible/
+   sudo nano hosts
+example to add hosts- at the end of the file (and we can add as many host we want to use)
+use:
+host1 ansible_ssh_host=<privateip 1.23.123.455>
+host2 ansible_ssh_host=<privateip 3.92.185.232>
+
+(to specify give a group name to all my hosts or servers i need to add it in the add host)
+for example:
+[servers]
+the add the host below
+
+[test]
+test1 ansible_ssh_host=172.31.90.90
+test2 ansible_ssh_host=172.31.81.144
+
+   [prod]
+prod1 ansible_ssh_host=172.31.95.224
+prod2 ansible_ssh_host=172.31.95.84
+
+
+(to connect ansible master and hosts permanently we will be using ssh connection)
+   use:
+   cd
+   ssh-keygen (in refrence to create keygen dont put pass just click enter three times)
+
+(to get the key after creation go to .ssh/)
+  use: 
+  ll
+  cd .ssh/
+  ls
+  cat id_rsa.pub (copy the key and go to host servers 
+
+  in host servers 
+   use:
+   cd .ssh/
+   ls (and will find the authorized_keys)
+   nano authurized_keys (and paste the key under the old key .do this for all the host servers)
+
+now you have sussecfully added ansible master to the host to confirm 
+
+    use:
+     cd  
+     ssh ubuntu@<public ip of the host i want to ssh to>
+also:
+     ansible -m ping all ( this will help to very if all the host are connected to master server
+                            use yes to show one after another)
+ 
+
+
+
+(with ad hoc command on anible we can configure any software )- it is used for performing 
+single task configuration on a host)
+in refrence to any ansible module i want to configure like file,service google file module ansible
+and yoy will see all the parameters)
+for example
+-------------------------------------------------
+  ansible <anyhost> -m <file or service> -a "path=/home/ubuntu/<the new file name> state=<any>"
+        (for creating a file with ad hoc we use touch to creat or absent to delete)
+ansible host1 -m file -a "path=/home/ubuntu/devops-training state=touch"
+ansible host1 -m file -a "path=/home/ubuntu/devops-training state=absent"
+         
+       for installing a service with ad hoc
+        (for creating a service use --become at the end for sudo user and can stop service
+         and start service)
+
+  ansible host1 -m apt -a "name=nginx state=latest" --become
+
+           for stopping and starting service with ad hoc
+  ansible host1 -m service -a "name=nginx state=stopped" --become
+  ansible host1 -m service -a "name=nginx state=started" --become
+
+-----------------------------------------
+
+(playbook is a file of instruction that can be used to assign different tasks on a playbook)
+example of playbook.yaml file to run  a task on a single host 
+---------------------------------------------------------
+to write a playbook use:
+nano playbook.yml
+---
+- hosts: host1
+  name: play-1
+  become: yes
+  tasks:
+   - name: install docker
+     apt:
+       name: docker.io
+       state: latest
+
+===============================
+after that run ansible playbook
+
+
+        example to install different resources on two group of hosts
+        ------------------------------------------------------------
+---
+- hosts: [test]
+  name: play-3
+  become: yes
+  tasks:
+   - name: install java
+     apt:
+       name: default-jdk
+       state: latest
+
+- hosts: [prod]
+  name: play-4
+  become: yes
+  tasks:
+   - name: install mysql
+     apt:
+       name: mysql-server
+       state: latest
+
+
+example of playbook.yml file to run a tasks on all host servers
+--------------------------------------------------------
+
+---
+- hosts: all or <name of subtitle of servers> example [servers]
+  name: play-1
+  become: yes
+  tasks:
+   - name: install docker
+     apt:
+       name: docker.io
+       state: latest
+====================================
+
+
+(use this command to verify clean playbook)
+ues:
+ansible-playbook <playbook yml file name> --syntax-check
+
+(ansible commands to run a playbook)
+use:
+ansible-playbook <playbook yml file name>   (and it will run the playbook)
+
+
+==============================
+
+
+example use all key value command to copy a file from ansible master to hosts
+------------------------------------------
+use:for example create a file then create the copy file playbook)
+echo hello> hello.txt or create new files as recommended
+nano playbook.yml
+
+---
+- hosts: all
+  name: play-1
+  become: yes
+  tasks:
+   - name: copy files
+     copy:
+       src: hello.txt
+       dest: /home/ubuntu/
+---------------------------------
+then run the playbook.yml
+
+
+
+example to use script to execute a file to a host
+-----------------------------------------------
+run this command before execution for script
+
+nano script.sh <in the script (touch 1.txt) or (echo "hello">> hello.txt)
+    chmod +x script.sh (use this code to make the script an executable script)
+    ll
+    nano script-playbook.yml
+   then paste this task or play
+
+---
+- hosts: host1
+  tasks:
+   - name: execute script
+     script: script.sh
+
+---------------------------------
+then run the playbook:
+ansible-playbook script-playbook.yml
+
+                      creating ansible role  
+                      --------------------
+(by default ansible roles is in this path. by default it is empty until you create a role)
+cd /etc/ansible/roles/
+ls
+cd
+ansible-galaxy init <any name for role> --offline
+ls
+cd apache
+ls
+
+(to get a structured view of role install tree)
+sudo apt-get install tree
+(to see the tree structure 
+use:
+tree
+
+(to start using roles it is best to start with writing tasks)
+cd tasks
+(write tasks in the tasks main.yml)
+nano main.yml
+
+(this is an example tasks of of configuring apache2)
+use:
+- name: install apache
+  apt:
+    name: apache2
+    state: latest
+
+- name: configure apache by deploying custom website
+  copy:
+    src: app.html
+    dest: /var/www/html/
+
+- name: copy apache conf file
+  copy:
+    src: apache2.conf
+    dest: /etc/apache2/
+  notify: restart apache2 service
+
+- name: start apache2 service
+  service:
+
+   cd ../
+   ls
+   tree
+(next we move to files )
+   cd files
+   ls
+(then we need to and the files needed in this role file directory) 
+   nano app.html
+   ls
+   sudo apt-get install apache2
+   cd /etc/apache2/ (this is the path to find the apache.conf file)
+   ls
+   cp apache2.conf /home/ubuntu/apache/files/  (we need to copy the .conf file to roles file directory)
+   cd
+   cd apache/files/
+   ls
+   nano apache2.conf
+   cd ../
+   ls
+
+(next we move to role handlers this is where the notify tasks are giving)
+   cd handlers
+   ls
+   nano main.yml
+(this example is for the apache2 restart notify)
+- name: restart apache2 service
+  service:
+    name: apache2
+    state: restarted
+----------------------
+
+(then come out of the roles and write the playbook for the role giving)
+ cd
+ ls
+ nano  playbook.yml
+(example of how the roles playbook should be)
+
+- hosts: all
+  name: play-2
+  become: yes
+  roles:
+    - apache
+-------------------------
+after writing the playbook:
+
+  ansible-playbook playbook.yml --syntax-check
+  ansible-playbook playbook.yml 
+
+(to confirm if its working on browser )
+use:public-ip/app.html
+
+(check if configuration worked on the servers as instructed)
+on host :
+cd /etc/apache2/
+ls
+cat apache2.conf
+ 
+
+
+
+ command to create an ansible role use 
+-------------------------------------=
+ansible-galaxy init apache --offline
+
+
+example of tasks main.yml 
+ubuntu@ip-172-31-87-116:~/apache/tasks$ cat main.yml
+---
+# tasks file for apache
+- name: install apache
+  apt:
+    name: apache2
+    state: latest
+
+- name: configure apache by deploying custom website
+  copy:
+    src: app.html
+    dest: /var/www/html/
+
+- name: copy apache conf file
+  copy:
+    src: apache2.conf
+    dest: /etc/apache2/
+  notify: restart apache2 service
+
+- name: start apache2 service
+  service:
+    name: apache2
+    state: started
+ 
+this is an example playbook for role 
+---------------------------------------
+---
+
+- hosts: all
+  name: play-1
+  become: yes
+  roles:
+    - apache
+
+
+
+
+
+
+1  clear
+    2  sudo apt-get update
+    3  sudo apt install software-properties-common
+    4  sudo apt-add-repository ppa:ansible/ansibl
+    5  sudo apt-add-repository ppa:ansible/ansible
+    6  sudo apt update
+    7  sudo apt install ansible
+    8  ansible --version
+    9  clear
+   10  cd /etc/ansible
+   11  ls
+   13  sudo nano hosts
+   14  cd ..
+   15  cd
+   16  ssh-keygen
+   17  ll
+   20  cd .ssh/
+   23  ls
+   24  cat id_rsa.pub
+   25  cd
+   26  ssh ubuntu@54.174.231.33
+   27  ansible ping all
+   28  ansible -m ping all
+   29  ssh ubuntu@23.22.140.45
+   30  ansible -m ping all
+   31  clear
+   32  ls
+   33  ansible -m ping all
+   34  history
+   35  cd /etc
+   36  ls
+   37  cd ansible
+   38  ls
+   39  cat hosts
+   40  clear
+   41  ansible hosts1 -m file -a "path=/home/ubuntu/ubuntu/devops-training state=touch"
+   42  cd
+   43  ansible hosts1 -m file -a "path=/home/ubuntu/ubuntu/devops-training state=touch"
+   44  ansible host1 -m file -a "path=/home/ubuntu/ubuntu/devops-training state=touch"
+   45  ls
+   46  ll
+   47  la
+   48  cd .ansible
+   49  ls
+   50  cd
+   51  cd /etc
+   52  ls
+   53  cd ansible
+   54  ls
+   55  cat hosts
+   56  cd
+   57  ansible host1 -m file -a "path=/home/ubuntu/devops-training state=touch"
+   58  ansible host1 -m apt -a "name=nginx state=latest" --become
+   59  clear
+   60  ansible -m ping all
+   61  clear
+   62  ansible -m ping all
+   63  clear
+   64  ansible host1 -m file -a "path=/home/ubuntu/devops-training state=touch"
+   65  ansible host1 -m file -a "path=/home/ubuntu/devops-training state=absent"
+   66  ansible host1 -m apt -a "name=nginx state=latest" --become
+   67  ansible host1 -m service -a "name=nginx state=stopped" --become
+   68  ansible host1 -m service -a "name=nginx state=started" --become
+   69  history
+   70  nano playbook.yaml
+   71  ansible-playbook playbook.yaml --syntax-check
+   72  ansible-playbook playbook.yaml
+   73  cat playbook.yaml
+   74  nano playbook.yaml
+   75  ansible-playbook playbook.yaml
+   76  cat nano playbook.yaml
+   77  nano playbook.yaml
+   78  touch hello.txt
+   79  ls
+   80  ansible-playbook playbook.yaml
+   81  cat playbook.yaml
+   82  nano script.sh
+   83  ls
+   84  vi script-playbook.yaml
+   85  chmod +x script.sh
+   86  ll
+   89  ansible-playbook script-playbook.yaml
+   90  cat script.sh
+   91  cat script-playbook.yaml
+   92  history

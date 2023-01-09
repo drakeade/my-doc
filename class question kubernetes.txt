@@ -1,0 +1,2 @@
+how to deploy two dependecy application on one pod with ?
+how did you get the https://index.docker.io/v1/ for docker secret ?

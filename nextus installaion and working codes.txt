@@ -1,0 +1,272 @@
+                   nexus installation
+                   --------------------
+pre-requsites
+
+1) have openjdk in the server
+2) at list have 2GB RAM & 15GB of hard drive space
+    
+                       
+to install go to aws ami machine, marketplace to install centos server t2.mideum 4GB ram  20 gb.
+to log in to centos :
+use:
+centos
+ 
+next  install java
+use:
+yum install java-1.8.0-openjdk-devel
+
+next to install nexus we will use docker to install it.
+an first to do so we need to install docker.
+ 
+use:
+//install required packages.
+sudo yum install -y yum-utils \
+device-mapper-persistent-data \1
+1vm2
+
+//use the following command to set up the stable repository.
+sudo yum-config-manager \
+     --add-repo \
+     https://download.docker.com/linux/centos/docker-ce.repo
+
+//INSTALL DOCKER ENGINE - COMMUNITY
+sudo yum install docker-ce docker-ce-cli containerd.io
+
+to check docker status if it is installed
+use:
+systemctl status docker
+
+if it status is inactive
+use:
+systemctl start docker
+
+after it up and running we can go ahead and pull nexus
+use:
+sudo docker pull sonatype/nexus3
+
+sudo docker images
+ 
+to run the container
+use:
+ sudo docker run -it -d -p 8081:8081 --name <container name (nexus)> <image name>
+
+sudo docker ps (to see ou container)
+
+now we can go ahead and access it using our web browser .
+use:
+<server public ip:port>
+
+thn the nexus dashboard will appear
+
+           RUN Nexus repository and setup the admin
+           ----------------------------------------
+to setup the admin click on signup on the right hand side.
+insert : user as (Admin)
+insert : password ( to do this we need to go to the docker server to get the password because
+since we used docker to install nexus the the credentials are stord in docker.
+
+to get the password go to the server :
+use:
+sudo docker exec -it <nexus container> bash
+ls
+cd nexus-data/
+ls
+cat admin.password
+
+copy the cat password and insert in the nexus signup admin password.
+
+so the setup will show and will prompt for a new password
+keep record of the new password or document it on notepad for that project.
+
+next
+           install Git to get the sample code
+           ----------------------------------
+to do so we need to access our git project form server or instance
+use:
+cd /opt
+git clone <git up project code url>
+ls
+
+to compile this code we need apache-maven if it is maven project
+use: 
+go to brower and search for apache maven go to downloads copy the tar.gz binary download.
+link.
+
+to insall maven it we need wget so lets first install wget.
+use:
+yum install -y wget
+
+then install the apache -maven
+use:
+wget <maven installation link>
+ls
+
+then untar the apache-maven
+use:
+tar zxf apache-maven-3.6.2-bin.tar.gz
+ls
+cd apache-maven-3.6.2.
+ls
+cd bin
+to check if maven is still inside bin working 
+use:
+./mvn -version
+
+for now apache-maven is only available on this directory to make it accessible by all the os
+use:
+export PATH=$PATH:/opt/apache-maven-3.6.2/bin
+
+done.
+
+next 
+ 
+     we need to connect our maven to nexus 
+     -------------------------------------
+cd opt
+id
+cd /root (i have to be the root user before i will get into this directory)
+ls -a
+cd .m2
+
+in .m2 we are to create a text file . ( this is where we are going to put the configuration of nexus and maven).
+use:
+nano settings.xml
+
+this is the text file copy and paste on settings.xml file :
+for refrence make sure you are using the current user name and password for the project in this text file
+and also use the current private ip address of server and port number for nexus
+
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.1.0"
+          xmlns:xsi="http://www.w3.org/2001/xmlSchema-instance"
+          xsi:schemalocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
+
+          <servers>
+            <server>
+              <id>nextus</id>
+              <username>admin</username>
+              <password>admin123</password>
+            </server>
+          </servers>
+
+          <mirrors>
+            <mirror>
+               <id>central</id>
+               <name>central</name>
+               <url>http://<put the server private ip address:8081/repository/maven-public/</url>
+               <mirrorOF>*</mirrorOF>
+             </mirror>
+           </mirrors>
+
+         </settings>
+
+ 
+after done save file.
+
+cd /opt
+ls
+cd <git project code>
+ls
+nano pom.xml
+
+in pom.xml scroll down to <distributionmanagement> and delete everything undr it to
+the closing tag </distributionManagement>
+
+in this text file uder repository its either we are using <maven-release> for main project release or
+for testing us <maven-snapshot>.
+and also the <id> has to have same name  we used in our settings.xml configuration (id)</id>
+the same id name for repository part and snapshot id part.
+for refrence use the current project nexus server ip address port number for <repository>
+</repository> and <snapshot> </snapshot>.
+and paste the one we really need for maven distribution which is
+
+<distributionManagement>
+<repository>
+    <id>nexus</id>
+    <name>maven-releases</name>
+    <url>http:// <server private ip address an nexus port:8081/atifactory/libs-release-local</url>
+</repository>
+
+<snapshotRepository>
+    <id>nexus<id>
+    <name>maven-snapshots</name>
+    <url>http://<server private ip address and nextus:8081/repository/maven-snashots</url>
+</snapshotRepository>
+    </distributionManagement>
+
+save pom.xml file
+ 
+next to compile mvn file 
+use:
+mvn compile
+and i will be using nexus to download the repository instead of using maven and that is why we did the configuration
+
+to see where the dependencies are downloaded on nexus go to nexus dashboard click on the 
+sonatype nexus repository -> click on Brows and -> on maven-public which is the derectory we used
+to make our configuration to see the compile dependencies that was downloaded for the project.
+
+to deploy the artifact
+we can always change the version so we can have different versioning of our artifacts.
+to change version
+use:
+nano pom.xml (go to <verion> part and change the version number) .
+
+use:
+mvn deploy
+
+              nexus integration with jenkins pipeline/build job with nexus repo.
+              -----------------------------------------------------------------
+first we need to install git because nexus i going to make a call through git only.
+use:
+after installing jenkins
+then :
+
+sudo yum install git -y
+
+to check git version
+use:
+git --version
+
+to setup git i need to configure
+use:
+git config --global user.name "<any name>"
+git config --global user.email "<any emailgmail.com"
+
+to check if git was succefully configure with information
+use:
+git config --list
+
+then make all the nexus cinfigurarion as seen above with maven 
+
+after those configuration of settings.xml and pom.xml
+ 
+create jenkins console do the normal configuration .
+next create any project job on jenkins like pipeline , frestyle or maven .
+
+add discription scroll down to pipeline title-> and select ->pipeline script from scm
+in the next column on->scm select-> git and put in the git repository url for my code
+
+then i can enter the credential the one i used to configure the git on server
+
+then in branch specifier
+use:
+/any meaninful branch name i want it to be so i can access it form server.
+
+then the sript path-> enter in (jenkinsfile)
+apply and save.
+
+next we can run it
+click on build now on jenkins dashboard
+
+
+
+
+
+
+
+
+
+
+
+
+    

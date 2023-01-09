@@ -1,0 +1,5 @@
+create a git workflow new repo on local and pushbto remote repo
+maven code build should be triggered once commit is made to master branch od develop branch using jenkins pipeline.
+if commit is made to master branch. build and publish website on port 82 with docker containerization . ubnuntu 
+container and install apache2 .build the code the code should be on /var/www/html
+if commit is made to develop branch.just bild the product. do not publish

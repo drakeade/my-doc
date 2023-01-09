@@ -1,0 +1,333 @@
+(to install terraform use the following codes):
+sudo apt-get update
+
+to get update of installation on browser )
+use:
+https://www.terraform.io/downloads
+
+sudo apt update
+
+wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+sudo apt update && sudo apt install terraform
+
+(to know the version)
+use:terraform version
+       
+              basic terraform operations
+              --------------------------
+1) init: is used to initialize our terraform
+2) plan: is used to review our codes
+3) apply: is used to deploy resources
+4) destroy: is to delete resources
+
+(first thing is to initialize our terraform with the provider we want to use)
+use aws:
+
+provider "aws" {
+  region     = "us-east-1"
+}
+
+then to initialize terraform use): terraform init
+
+(to kmow which provider my terraform is connected to use)
+ll
+cd .terraform/
+
+(next to authorize creating or making any deployment to aws )
+use : iam
+1) go to iam
+2) create a new user as use any name to remember example of name: terrafrom
+3) then click on the check box programmatic access key
+4) create an administratoraccess but by default it should be there.
+5) no need to add tags review and create. then copy access key and the other key and keep it safe
+for authentication.
+ 
+next i will be adding the accsess keys to authenticate my aws account on terraform)
+use:
+add the access_key and secret key like this to the main.tf file
+   
+nano main.tf
+
+provider "aws" {
+  region     = "us-east-1"
+  access_key = "AKIAVQWXI4AQHKDNIKNZ"
+  secret_key = "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"
+}
+
+(to align format the code or command line that we are giving to be accurate)
+use:
+terraform fmt
+
+to validate our iam access keys)
+use :
+terraform validate
+
+              creating vpc in with terraform
+              ------------------------------
+next our first deployment will be aws vpc)
+1) go to vpc click on create vpc
+
+on terreform server: 
+nano vpc.tf
+
+resource "aws_vpc" "main" {
+  cidr_block       = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  instance_tenancy = "default"
+
+  tags = {
+    Name = "main"
+  }
+}
+ 
+(for refference the first "main" added to our vpc resource is just for reference it can be any name
+. it can be used to as a tag for any deployment that wants to use this vpc at any point in time )
+
+(next review by using):
+terraform plan
+
+(apply the code by using):
+terraform apply
+
+use (yes) for the question that comes after apply code.
+
+
+( to delete unwanted resources)
+use:
+terraform destroy
+                       
+                    create ec2 with terraform
+                    -------------------------
+
+(next to install ec2):
+nano ec2.tf
+
+resource "aws_instance" "firstec2" {
+ami = "ami-0ba60995c1589da9d"
+instance_type = "t2.micro"
+key_name = "nvirginia1"
+subnet_id = "subnet-048b3aa8a1de93cb6"
+tags = {
+Name = "terraform"
+}
+}
+
+terraform validate
+
+terraform fmt
+
+terraform apply --auto-approve
+
+                       (create key pair )
+
+(to create a keypair we have to create a new publickey in our terraform server and add the key to create new keypair)
+use:
+ssh-keygen
+ll
+cat .ssh/id rsa.pub
+
+resource "aws_key_pair" "deployer"{
+  key_name = "mac-key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCzZlFNEEPEShjXOo2WpAEpHFobHGb3gv2PACCIFxALjRkIdDl89SAn8+Jy4q+eB5nK+5IGbCcg9cylqjU4zuiHe8ErdEQzGqhDE6IZxdFaP629BMft8hbg6iDS+w1vT1bO37jar70MhFIIiOzAeOMnh8O6lV5IBVDrfry4O6nLri8IL+1tAbsxV+6HcL/LkZUr/Rxlp93oLX34WAzGCunE7t4vXcz/60shni2n/Y7Rvdbq0RParmnIPrUpL0rK+NPopk/iwZhIvBqbRUHUQsoPA+XB5DKnSvkRknhPalHORVOhJ5axfC9ZpsJ/ujgQXSDMWBIS0JI/B7TUia7Rb6vcICr64smYrDV4QQU9zxh8w7aNfNPQ6MhMW6eegNoSYvNYHAkQc96AiUYBYG5viySgdKSKS0gqtElTAxpBzVa/cdUb6bd5xKmaLEOfKqpfT6qRRZsPHRgiumCrD9MUw+TZOTwq9K5p2hYGjdGQw2iptFNnW/DsBqD1tXK5W/vprpM= ubuntu@ip-172-31-90-145"
+}
+
+
+           creating ec2 with / elastic ip
+           ------------------------------
+resource "aws_instance" "firstec-ohio2" {
+  ami           = "ami-0283a57753b18025b"
+  instance_type = "t2.micro"
+  key_name      = "ohiokey.1"
+  count         = 1
+  subnet_id     = "subnet-003d57933932a0193"
+  tags = {
+    Name = "terraform ohio ec2"
+  }
+}
+
+# resource block for eip #
+resource "aws_eip" "demo-ohio-eip" {
+  vpc = true
+}
+
+
+        creating multple region deployment of resources ec2 example
+        -----------------------------------------------------------
+nano main.tf
+
+provider "aws" {
+  region     = "us-east-1"
+  access_key = "AKIARUQHSGSWIKGQAG5D"
+  secret_key = "zLOKGFbP58jmPW6W2sVuOJiN514Yw4wY8NdgTNpn"
+}
+
+
+provider "aws" {
+  region     = "us-east-2"
+  access_key = "AKIARUQHSGSWIKGQAG5D"
+  secret_key = "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"
+  alias      = "west"
+}
+ 
+nano ec2.tf
+
+resource "aws_instance" "nvirginia-ec2" {
+  ami           = "ami-0574da719dca65348"
+  instance_type = "t2.micro"
+  key_name      = "nvirginia1"
+  count         = 2
+  subnet_id     = "subnet-048b3aa8a1de93cb6"
+  tags = {
+    Name = "hello-virginia"
+  }
+}
+
+resource "aws_instance" "ohio-ec2" {
+  ami           = "ami-0283a57753b18025b"
+  instance_type = "t2.micro"
+  key_name      = "ohiokey.1"
+  count         = 2
+  provider      = aws.west
+  subnet_id     = "subnet-003d57933932a0193"
+  tags = {
+    Name = "hello-ohio"
+  }
+}
+
+
+          creating vpc, public subnet, private subnet, internet gatway, route table 
+               and route table association.     
+     -------------------------------------------------------------------------
+
+  #step 1: create a vpc
+  resource "aws_vpc" "myvpc"{
+      cidr_block = "10.0.0.0/16"
+      tags = {
+         Name = "MYTerraformVpC"
+      }
+  }
+
+  #step 2: create a public subnet
+  resource "aws_subnet" "publicsubnet"{
+      vpc_id = aws_vpc.myvpc.id
+      cidr_block = "10.0.1.0/24"
+  }
+
+  #step 3: create a private subnet
+  resource "aws_subnet" "privatesubnet"{
+      vpc_id = aws_vpc.myvpc.id
+      cidr_block = "10.0.2.0/24"
+  }
+
+  #step 4: create IGW
+  resource "aws_internet_gateway" "igw"{
+      vpc_id = aws_vpc.myvpc.id
+  }
+
+  #step 5: route tables for public subnet
+  resource "aws_route_table" "publicRT"{
+      vpc_id = aws_vpc.myvpc.id
+      route {
+          cidr_block = "0.0.0.0/0"
+          gateway_id = aws_internet_gateway.igw.id
+      }
+  }
+
+  #step 6: route table association public subnet
+  resource "aws_route_table_association" "publicRTassociation"{
+      subnet_id = aws_subnet.publicsubnet.id
+      route_table_id = aws_route_table.publicRT.id
+  }
+
+
+              
+             create a security group
+              -----------------------
+
+resource "aws_instance" "firstec2" {
+ami = "ami-0ba60995c1589da9d"
+instance_type = "t2.micro"
+key_name = "" #This can be downloaded from your AWS Account
+subnet_id = "${aws_subnet.main.id}" # from the subnet resource aws_subnet first
+tags = {
+Name = "knode"
+}
+user_data = file("./install.sh")
+}
+
+
+resource "aws_vpc" "main" {
+  cidr_block       = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  instance_tenancy = "default"
+
+  tags = {
+    Name = "main"
+  }
+}
+
+resource "aws_subnet" "main" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.1.0/24"
+
+  tags = {
+    Name = "Main"
+  }
+}
+
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "main"
+  }
+}
+
+
+resource "aws_security_group" "security_group" {
+  name        = "allow_tls"
+  description = "Allow TLS inbound traffic"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description      = "TLS from VPC"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = [aws_vpc.main.cidr_block]
+  }
+
+  egress {
+    description = "all traffic"
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "allow_tls"
+  }
+}
+  resource "aws_route_table" "example" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+
+  tags = {
+    Name = "example"
+  }
+}
+
+
+
+resource "aws_route_table_association" "a" {
+  subnet_id      = aws_subnet.main.id
+  route_table_id = aws_route_table.example.id
+}

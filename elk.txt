@@ -1,0 +1,10 @@
+                 ELK is a monitoring tool
+                 ------------------------
+it is used for 
+
+1) system performance monitoring
+2) log management
+3) application performance monitoring
+4) application data analysis
+5) security monitoring and alerting
+6) data visualization

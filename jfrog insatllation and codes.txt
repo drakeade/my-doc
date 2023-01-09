@@ -1,0 +1,243 @@
+        installing jfrog
+-------------------------------------------
+first it is dependent on java
+
+go to aws iam marketplace and type cent os use t2medium
+
+to log into centos on putty 
+use:
+centos
+
+next
+yum install java-1.8.0-openjdk-dev
+
+to install jfrog we can use docker to install it docker will pull the image and then launch
+it as a container.
+
+to install packages for docker
+use:
+
+sudo yum install -y yum-utils \
+device-mapper-persistent-data \
+1vm2
+
+sudo yum-cofig-manager \
+--add-repo \
+https://download.docker.com/linux/centos/docker-ce.repo
+
+sudo yum install docker-ce docker-ce-cli containerd.io
+
+to start docker
+use:
+systemctl start docker
+
+to see docker status
+use:
+systemctl status docker
+
+to pull jfog image form docker we need to go to jfrog (open-source|jfrog ) on browser to get the command to pull jfrog.
+use:
+sudo docker pull docker.bintray.io/jfrog/artifactory-oss
+
+to check if the jfrog image have been downloaded
+use:
+sudo docker images
+
+next we need to run the jfrog image container
+open-source|jfroguse:
+sudo docker run -it -d -p 8081:8081 --name artifactory docker.bintray.io/jfrog/artifactory-oos
+
+sudo docker ps
+
+to access jfrog no we need to go to browser and paste the public ip address of the server and add port add:8081
+use:
+<server publice ip address:8081>      and it will be accessible.
+
+                next
+
+        setup admin on jfrog console
+        ----------------------------
+set username:
+set password:
+
+save information on notepad give it a specic identification project.
+
+the it logs in .
+i will only need to configure the proxy if my system dosent have internet connection
+
+skip and it will show create a repositories . for example we are creating maven repo
+click on maven and create . and i will create 5 directories.
+
+
+       we will use git to get the smaple code
+----------------------------------------------
+
+to do so we will go to our server or instance and first install git on same jfrog server.
+
+use:
+sudo yum install git -y
+sudo yum install wget -y   (we will be using wget to get maven)
+
+next we need to get the git sample code and we need the git repository url to get the code.
+copy the git repo code url.
+
+next
+use:
+git clone <git code repository>
+
+next we nee to install maven so we can build our pulled code from github
+to get the maven installation code > type apache maven on browser click on downloads and copy the 
+binary tar.gz link.
+
+use:
+wget <paste the maven binary tar.gz link>
+
+to untar the maven tar.gz file
+use:
+tar zxf <apache-maven-3.6.2-bin.tar.gz>    
+
+we untar it 
+use:
+cd apache-maven-3.6.2
+
+to see if its working 
+use:
+ls
+cd bin
+./mvn -version  (to get the version and confirm if maven is working correctly)
+
+to make sur maven is available to all the os . and all the os will be able to use maven
+use.
+export PATH=$PATH:/opt/apache-maven-3.6.2/bin
+
+cd to code directory
+
+and use:
+mvn compile
+
+and it will compile the file dowloading the repositories and dependencies.
+
+we need to connect maven to our jfrog artifactory.
+for that we need to go to the jfrog console on browser and click on : m libs-snapshot-local
+
+after that on the right hand side click on the title :type password to insert credentials to the code
+snippets> and enter my password i used to open jfrog
+
+after that i will click on that click on : Generate maven settings
+after that dont touch the default setting just scroll down and click on : Generate settings
+
+now we will see the xml file . download the snippet . go to local file open it with notepad and copy the codes
+go to server 
+use:
+cd /root
+ls -a
+cd .m2
+vi settings.xml
+
+paste the copied content make changes to the username and password using the jfrog user name and password.. (this will prompt maven to ask jfrog for any dependencies any time
+it needs it . thats the reason we are saving this content here ) save it .
+next:
+use:
+cd to code directory
+mvn compile  (now it will be downloading the dependencies using jfrog artifactory.
+after it is done compiling we need to setup distribution..
+       
+              seting up distribution system
+              ----------------------------
+to set it up go to the jrog console on browser . on the dashboard click on : m libs-snapshot-local.
+scroll down and copy the 1-7 part of the code under (deploy). this will be used to deploy the war file or any type of artifact
+i will create on to the jfrog artifactory.
+next we go back to our instance or server in the code directory and paste the code in
+use:
+vi pom.xml
+then we need to paste it after the closing tag of dependency part of the file in pom.xml
+
+to upload the package file to jfrog
+use:
+mvn deploy
+
+then after that we go to the jfrog console dashboard and click on the second menu button
+click on libs-snapshot-local . >list it and i will see the folder created there. and when i >list the folder
+i will see the snapshot when i list the snapshot i will see the executable file which is the war file for this example
+.
+                  jfrog versioning
+                  ----------------
+to change the version go the code directory on server
+use:
+vi pom.xml (and change the number of version from maybe 4.2.5 to 4.2.6)
+
+save it and
+use:
+mvn deploy 
+ 
+and check the version on (then after that we go to the jfrog console dashboard and click on the second menu button
+click on libs-snapshot-local . >list it and i will see the folder created there. and when i >list the folder
+i will see the snapshot when i list the snapshot i will see the executable file which is the war file for this example
+ and i will see the two different version.
+
+            integrating artifactory with jenkins for automation
+            ---------------------------------------------------
+pre-requisites
+
+1) we need an artfactory server
+2) we need a jenkins server
+
+integration steps
+----------------
+install "artifactory" plug-in
+
+to do so go to jenkins dashboard
+click on manage jenkins -> manage plugins -> Available -> search for (artifactory) install without restart
+
+
+next
+
+we need to configure artifactory server credentials
+
+to do so go to jenkins dashboard
+click on manage jenkins -> configure system -> scroll down and will see ->Artifactory
+
+in the Artifactory 
+ insert in the following
+
+server ID : artifactory-server
+URL : Artifactory server url <for example http//:<      >:port number/artifactory
+
+next
+
+in the Default Deployer credentials
+Username : <in real tim it is adviceable to create a new user in the jfrog artifactory dashboard >
+
+when we are creating this new user in jfrog artifactory 
+use:
+add the new user name , and email as jenkins@gmail.com
+click the checkbox Admin privileges also check the box can update profile .
+
+password : <the password i used to create my new user details>
+
+then insert the new user on the jenkins Default Deployer Credential : username and password,
+apply and save
+
+next
+    create a maven project
+    ----------------------
+i) create a new job
+
+ job Name : artifactory-project or any name>
+
+ source code management
+
+  Git URL : git url for our code
+ 
+ Builed environment
+   
+   Resolve artifacts from Artifactory : <provide artifactory server and repository details>
+
+Build-Goals: clean install
+
+add-Post-build Actions
+     Deploy Artifacts to Artifactory: <provide Artifactory server and repository details>
+
+Execute job
+
+

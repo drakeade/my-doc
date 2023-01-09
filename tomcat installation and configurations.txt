@@ -1,0 +1,51 @@
+                   tomcat installatin amd configuration.
+                  ---------------------------------------        
+ 
+        tomcat is a web server we deploy our web apps to tomcat 
+to get latest version of tomcat . google : apache tomcat.
+use:
+   wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.27/bin/apache-tomcat-10.0.27.tar.gz
+   tar xvfz apache-tomcat-10.0.27.tar.gz (to untar or unzipe tomcat)
+   cd apache-tomcat-10.0.27
+   ls
+   cd conf/
+   ls 
+   nano tomcat-users.xml  (in this file scroll down to the end just before the closing tag add this three roles
+                              is for user creation to be able to accesss all the webapps and war file that download in my tomcat )
+
+    
+  tomcat-users.xml -> three roles (and i can change the password or the username if i want)
+
+<role rolename="manager-gui"/>
+<role rolename="manager-script"/>
+<user username="admin" password="password" roles="manager-gui, manager-script"/>
+ 
+-------------------------------  
+cd ..
+cd bin
+./startup.sh
+now open tomcat on browser with the test <publicip:8080 0r i can change the port
+on tomcat console click on manager app (and it wont give access . to configure access to mager app do the following below
+
+why do we need to configure manager app -> we dont need to restart tomcat and because it makes it easier to see where our .war file is deployed on tomcat -> manager App console.
+
+in test server
+use:
+cd ..
+cd webapps/
+ls
+cd manager/
+ls
+cd META-INF
+ls
+nano context.xml  (scroll down to-> allow=<this a local defaultip > but we nee to change it so that it can be acessible from any ip.
+                   in the insert (".*") like this-> allow=".*"/> then manager app will be accessible)
+cd ..
+cd ..
+cd bin
+ls
+./shutdown.sh
+./startup.sh
+
+now go to test server tomcat on browser and click on -> manager App (and it will require the user role name and password we configer in the user.xml file.
+insert the username and password of (users.xml file) click sign in and it will log into manager App.

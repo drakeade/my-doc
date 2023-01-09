@@ -1,0 +1,80 @@
+this codes where used to create deployment and to deploy it into the cluster or also know as kmaster, we also created
+secret and used it to pull a private image on docker , and also creating service and expose node port.
+1  clear
+    2  kubectl get nodes
+    3  kubectl get pods -A
+    4  ls
+    5  kubectl run nginx --image nginx --port 80
+    6  kubectl get pod
+    7  kubectl get pod -o wide
+    8  vi deploy.yml
+    9  kubectl apply -f deploy.yml
+   10  kubectl get pod
+   11  kubectl delete pod nginx
+   12  kubectl get pod
+   13  kubectl delete pod nginx-deployment-66b6c48dd5-95tht
+   14  kubectl get pod
+   15  kubectl scale deployment nginx-deployment --replicas 7
+   16  kubectl get pod
+   17  kubectl get deploy
+   20  vi deploy.yml
+   21  kubctl apply -f deploy.yml
+   22  kubectl apply -f deploy.yml
+   23  vi deploy.yml
+   24  kubectl apply -f deploy.yml
+   25  vi deploy.yml
+   26  kubectl apply -f deploy.yml
+   27  vi deploy.yml
+   28  kubectl apply -f deploy.yml
+   29  vi deploy.yml
+   30  kubectl apply -f deploy.yml
+   31  vi deploy.yml
+   32  kubectl apply -f deploy.yml
+   33  vi deploy.yml
+   34  kubectl apply -f deploy.yml
+   35  ls
+      
+     for deboging pod use 
+----------------------------
+kubectl describe pod <pod name>
+   38  vi deploy.yml
+   39  kubectl apply -f deploy.yml
+   40  vi deploy.yml
+   41  kubectl create secret docker-registry mysecret --docker-server https://index.docker.io/v1/ --docker-username drakeade --docker-password Eliminator77 --docker-email drakeade9@gmail.com
+   42  vi deploy.yml
+   43  kubectl apply -f deploy.yml
+   44  kubectl get deployments
+   45  kubectl get secret
+   46  kubectl delete secret docksecrete
+   47  kubectl delete secret regsecret
+   48  kubectl get secret
+   49  vi deploy.yml
+   50  kubectl apply -f deploy.yml
+   51  vi deploy.yml
+   52  kubectl apply -f deploy.yml
+   53  vi deploy.yml
+   54  kubectl get deployments
+   55  kubectl edit secret mysecret
+   56  kubectl describe deployment mrnginx
+   57  kubectl get pod
+   58  kubectl get pod -o wide
+   59  kubectl create service nodeport mrnginx --tcp 80:80
+   60  kubectl get svc
+   61  kubectl describe svc mynginx
+   62  kubectl describe svc mrnginx
+   63  kubectl delete svc mrnginx
+   64  kubectl create service nodeport nginx --80:80
+   65  kubectl create service nodeport nginx --tcp 80:80
+   66  kubectl describe svc nginx
+   67  kubectl delete svc nginx
+   68  kubectl expose deployment mrnginx --port 80 --type NodePort
+   69  kubectl get svc
+   70  kubectl describe svc mrnginx
+   71  kubectl get deploy
+   72  kubectl delete deploy  nginx-deploymen
+   73  kubectl delete deploy  nginx-deployment
+   74  kubectl describe svc mrnginx
+   75  kubectl get svc
+   76  kubectl edit svc mrnginx
+   77  history
+

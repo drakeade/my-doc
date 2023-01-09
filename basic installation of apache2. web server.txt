@@ -1,0 +1,6 @@
+ sudo apt-get update
+    2  sudo apt-get install apache2
+    3  cd /var/www/html
+    4  sudo rm index.html
+    5  sudo nano index.html
+    6  history

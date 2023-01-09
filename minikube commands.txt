@@ -1,0 +1,33 @@
+sudo apt-get update
+sudo apt install docker.io
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb
+sudo dpkg -i minikube_latest_amd64.deb
+sudo chmod 777 /var/run/docker.sock
+sudo snap install kubectl --classic
+
+minikube start
+
+or use 
+
+ 1  clear
+    2  sudo apt-get upadte
+    3  sudo apt-get update
+    4  clear
+    5  sudo apt-get install docker.io
+    6  curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+    7  sudo install minikube-linux-amd64 /usr/local/bin/minikube
+    8  ls
+    9  rm minikube-linux-amd64
+   10  ls
+   11  curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb
+   12  sudo dpkg -i minikube_latest_amd64.deb
+   13  sudo chmod 777 /var/run/docker.sock
+   14  minikube start
+   15  sudo snap install kubectl --classic
+   16  kubectl get nodes
+   17  kubectl get pods
+   18  kubectl get pods -A
+   19  kubectl create namespace sample
+   20  kubectl get namespace
+   21  history
+

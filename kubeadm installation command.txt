@@ -1,0 +1,311 @@
+Both on master and slave - with root
+
+sudo su
+apt-get update  
+apt-get install docker.io -y
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -  
+echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" >/etc/apt/sources.list.d/kubernetes.list
+apt-get update
+apt install kubeadm=1.20.0-00 kubectl=1.20.0-00 kubelet=1.20.0-00 -y  
+
+On master to make sure the kubernetes cluster works perfectly use the following command : 
+
+kubeadm init --pod-network-cidr=192.168.0.0/16
+>> from the above output get the kubeadm join token and paste into worker node and pst the token on the worker nodes to join the 
+cluster .
+
+exit from root
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Note: In case we want to retrieve the join token use the below-mentioned command.
+
+kubeadm token create --print-join-command
+
+------------------------------------------------------
+to connect cluster and nodes to run on network use one of this code but weavenet is sure to work.
+
+>> kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+or
+
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+
+
+bare metal installation of kubernetes kubeadm installation command
+-----------------------------------------------
+1  sudo apt get update
+    2  sudo apt get-update
+    3  sudo apt-get update
+    4  sudo su
+    5  kubectl get pods
+    6  kubectl get nodes
+    7  kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+    8  kubectl get pods
+    9  kubectl get pods -A
+   10  kubectl get nodes
+---------------------------------------------------------------------------------------
+
+                           deployment 
+                           ==========
+to deploy a pod use this commands but it is not used in real projects
+                          
+kubectl run nginx --image nginx --port 80
+kubectl get pods -o wide
+-------------------------------------------------------------------
+
+
+ to check in the node it is working on to see in which node it was deployed on use
+        ------------------------------------------------------
+sudo docker ps -a
+
+
+-----------------------------------------
+
+(in refrence to this part most of the time we will be using docker image and 
+container or jfrog for pulling our application image and container ( to deploy a deployment use
+--------------------
+nano deploy.yml   (this yml file is to put the deployment file as recommended> one of the
+advantage of deployment is the replicas even if one replica is deleted kubernetes automatically
+replace it and it is still run that is best to use kubernetes deployment for deploying my application)
+
+ in other to deploy the file use
+kubectl apply -f <file name.yml>  (and it will be deployed)
+kubectl get pods
+
+ to delete a pod use
+kubectl delete pod <name of pod>
+
+(to see all my deploy)
+kubectl get deploy
+
+(to delete a deployment)
+kubectl delete deploy <deployment name>
+
+
+(we can also scale up our kubernetes deployment replicas to any amount by using this command)
+use this command to scale up
+kubectl scale deployment <name of deployment> --replicas 6
+ 
+use 
+kubectl get deploy (to get the amount of replicas)
+kubectl get pods -A
+kubectl get nodes
+kubectl get pods -o wide
+             
+                             secrets
+                             =======
+(we have to create a kubernetes secrete credential for docker on kubernetes to be able to pull
+docker images or we can say to access docker to be able to pull the needed application image
+from a private repository we can also do this for jfrog pulling image)
+(to create secret for docker in kubernetes use) 
+kubectl create secret docker-registry <any name for secret > --docker-server https://index.docker.io/v1/ --docker-username drakeade --docker-password Eliminator77 --docker-email drakeade9@gmail.com
+
+(to be able to deploy a private image from docker or jfrog with the after creating a kubernetes secret
+credential for docker or jfrog i must add the imagepullsecrets: command in the deploy.yml file)
+for example:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mrnginx (use new name for new deployment' any name)
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: drakeade/new-nginx-img
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: mysecret
+
+(to get list of deployments that have been deploy)
+use:
+kubectl get deployments
+ 
+(to list out the secrets i have created)
+use:
+kubectl get secret
+
+(to see more information of secret)
+kubectl describe secret <secret name)
+
+(to delete a secret)
+use:
+kubectl delete <secret name>
+
+(to see a deployment credential)
+use:
+kubectl describe deployment <deployment name used inside the yaml deployment file>
+        
+                          service
+                          =======
+(we can create a service for an existing deployment in three  ways) its either we create it with a kubectl create 
+service command or we expose )(after creating a service all the pods will now be in control of the 
+of the service created for that perticular deployment ) in real project we use ClusterIP)
+use:
+kubectl create service <NodePort or ClusterIP or LoadBalancer> <app name in deployment name> --tcp 80:80
+kubectl get svc
+kubectl describe svc <app name in the deployment file that was used to create the service>
+kubectl delete svc <service name>
+
+or better to use expose command
+use:
+kubectl expose deploy <deployment name> --type NodePort  --port 80 --protocol TCP
+kubectl get svc
+kubectl describe svc <the deployment file name  that was used to create the service>
+kubectl delete svc <service name>
+ 
+or better use:
+the yml service creation)
+example:
+
+apiVersion: 
+kind: service
+metadata:
+  name: nginx-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetport: 80
+
+
+
+(to change a service from NodePort or ClusterIP or LoadBalancer )
+kubectl edit svc <service name>
+after editing save with esc :wq
+
+
+
+
+
+                          Ingress Controller: 
+                          ==================
+(to inpliment ingress in any of my deployment . ingress controller is needed)
+(to get ingress controller )use:
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.49.0/deploy/static/provider/baremetal/deploy.yaml
+(to conferm if ingress controller has been created)
+use:
+kubectl get pods -A
+ (to create deploy for ingress in kubernetes)
+use: 
+nano ingress.yml
+
+(to get any api version for kubernetes services )
+use:
+kubectl api-resources
+
+
+(in this example of ingress we actually deployed both nginx image and apache image and both are using same service)
+kubectl create deploy apache --image httpd --port 80)
+kubectl expose deploy <deployment name> --type NodePort  --port 80 --protocol TCP
+kubectl get svc
+(an example of deployment for ingress. we can actually create two paths depending on the requirment)
+:
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /nginx
+        pathType: Prefix
+        backend:
+          service:
+            name: my-docker-image
+            port:
+              number: 80
+
+  - http:
+      paths:
+      - path: /apache
+        pathType: Prefix
+        backend:
+          service:
+            name: my-apache
+            port:
+              number: 80
+
+-------------------------------------------------------------------------
+
+to deploy our ingress deployment for nginx and apache image )
+use: 
+kubectl apply -f ingress.yml
+
+(to get port for ingress=controller)
+ kubectl get svc -A
+ 
+(to get the logs for an ingress controller)
+use:
+kubectl get pod -A
+kubectl logs <pod name> 
+
+example of how to access it on browser
+https://3.95.148.10:32540/application path
+
+
+
+                        Kubernetes Dashboard:
+                        ====================
+(this command is used for creating all the resources we need for kubernetes dashboard) 
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta7/aio/deploy/recommended.yaml
+
+(this command is used to create a service account for my kubernetes)
+kubectl create serviceaccount cluster-admin-dashboard-sa
+
+(this command is used to asign roles to the account)
+kubectl create clusterrolebinding cluster-admin-dashboard-sa \
+--clusterrole=cluster-admin \
+--serviceaccount=default:cluster-admin-dashboard-sa
+
+(to create token use the following command)
+TOKEN=$(kubectl describe secret $(kubectl -n kube-system get secret | awk '/^cluster-admin-dashboardsa-token-/{print $1}') | awk '$1=="token:"{print $2}') 
+kubectl get svc -A
+ 
+(to access kubernetes dashboard we have to remove the service from ClusterIP to NodePort)
+use:
+kubectl edit svc kubernetes-dashboard -n kubernetes-dashboard
+kubectl get svc -A
+
+example of how to access it on browser
+https://3.95.148.10:32540/
+
+(get token and paste on kubernetes loging credential)
+echo $TOKEN
+=================================================
+
+
+
+
+example of how to create a secret 
+-----------------------------------
+ kubectl create secret docker-registry mysecret --docker-server https://index.docker.io/v1/ --docker-username drakeade --docker-password Eliminator77 --docker-email drakeade9@gmail.com
+
+
+this what the join token looks like
+-------------------------------------
+kubeadm join 172.31.10.211:6443 --token 3jkil6.bzkalplmyodms5ao \
+    --discovery-token-ca-cert-hash sha256:692cf5e8c1b56e6d3a48e3cc656dca5cbea31d5acfeffc402098cb567351c546

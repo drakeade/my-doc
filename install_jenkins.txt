@@ -1,0 +1,263 @@
+
+
+
+                   what is contineous intergration
+                   -------------------------------
+the process of having shoter release cycles(sometimes, several times a day), i.e,
+creating small features and intergrating them to the source code and automating the build
+and test process for quck feedback . that is what we call continuos intergration.
+
+         core of contineous intergration
+automated build , automated testing, manual testing , deploy to testing server feedback and manual intervention to deploy to production
+.
+
+                         jenkins installation
+                         --------------------
+
+pre-requsite
+------------
+java has to be installed in all the three servers
+install maven in all the servers
+one server for jenkins
+one server for test
+one server for prodoction
+
+1) installation on test and production server 
+   sudo apt-get update
+   wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.27/bin/apache-tomcat-10.0.27.tar.gz
+   then to unzip tomcat or untar tomcat
+   tar xvfz apache-tomcat-10.0.27.tar.gz
+   sudo apt-get install openjdk-11-jdk -y
+   sudo apt-get install maven -y
+
+2) installation on main jenkins server
+   sudo apt-get update
+   sudo apt-get install openjdk-11-jdk -y
+
+  curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+  echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+   https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+  sudo apt-get update
+ sudo apt-get install jenkins -y
+   
+  to check jenkins status
+  use:
+  sudo service jenkins status
+  
+  if jenkins is not running
+  use:
+  systemctl start service
+
+3) now check on browser if jenkins is running (:8080 is the default port for jenkins)
+   use:
+   <publicip for main jenkins server:8080
+  
+   in the browser it will bring out the /var/lib/jenkins/secrets/initialAdminpassword
+   use:
+   sudo cat <copy and paste the var path to get Administrator password> 
+    
+   paste on the password on the Administrator password input on browser.
+   on browser click on install suggested plugings
+    
+   next page on jenkins browser: create first admin user 
+
+4) first always update the ip address url for jenkins server or to make it permanent use privat ip address
+   use: on jenkins dashboard -> manage jenkins -> configure system <(the scroll down to jenkins url and change the ip (http//:privateip address:8080/)
+
+          to set up jenkins server and test server and production server.
+          ---------------------------------------------------------------
+ 5)  next we need to enable our nodes or server . go to manage jenkins and click-> manage security  scroll down to -> Agents and click on-> Random
+   save and apply.
+   
+   next we need to addd the test nodes and production node or server on jenkins manage nodes an clouds
+   to do so go to-> manage jenkins -> manage Nodes and clouds -> new node -> put the first name of node as (test) click on -> permanent agent , and create node or server
+   
+   in the next page scroll down to (Remote root directory ) and add the path i will be accessing in the server -> insert : /home/ubuntu/ and save.
+   
+   next to configure the node on its server click on the -> test node -> copy the (Run from agent command line to integrate the node
+   first copy the -> curl -sO http:..............:8080/jmdndn/agent.jar and paste it on the test server to which will download a agent.jar file for configuration.
+
+   second copy the -> java -jar agent.jar jjjjjkk ) code and paste on server at the end of the code and add & 
+   now repeat same steps to add production server 
+   we can add up any number of nodes or server needed for our deployment.
+   
+                    jenkins automation to clone github repository to any node
+                    using jenkins pipeline and build of code on test or prod
+                    ---------------------------------------------------------
+6) next we nee to create a freestyle project or pipeline for test job for test server -> go to dashboard -> + NEW OR -> create a job -> click on freestyle project.
+   give it a test job  as name and click ok then in the next page that shows up click the checkbox -> restrict where this project can be run then
+   insert the name of the node were i want to run the job in the -> label expression
+    
+   next scroll down to the -> source code management then click on -> Git  then in the -> Repository URL insert the git project url source code i want to test.
+   save go back and make the build to clone repo to test node.
+  
+   install tree so i can see the tree structure of the cloned repository.      
+   use: sudo apt-get install tree
+   now clonnig is completed and if i go to my test server jenkins automatically creates a workspace and and in the work space it have created the job and in the job it has the cloned repo.
+   tree   (to see the tree structure)
+
+   to builed the code use mvn verify . to accomplish this we need to configure the same test job where aour code was copied to.
+   click on -> the test job -> click on configure -> scroll down to -> build steps -> select (execute shell) to give execution code .
+   in the script write in same script and give gap-> 
+                                                     pwd
+                          
+                          
+    in the gap under write ->                        mvn verify
+ 
+  
+ --------------------------------------------------------------------
+  apply and save  and click build now
+  then our code will be built and we have our .war file ready
+  go to test server in workspace -> (job name) -> and use : tree (to see the war ready file for deployment.
+
+next
+
+7) to deploy our built .war file to tomcat we need to install tomcat on test node and production node
+   use:
+   wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.27/bin/apache-tomcat-10.0.27.tar.gz
+   tar xvfz apache-tomcat-10.0.27.tar.gz (to untar or unzipe tomcat)
+   cd apache-tomcat-10.0.27.tar.gz
+   ls
+   cd conf/
+   ls 
+   nano tomcat-users.xml  (in this file scroll down to the end just before the closing tag add this three roles
+                              is for user creation to be able to accesss all the webapps and war file that download in my tomcat )
+
+    
+  tomcat-users.xml -> three roles (and i can change the password or the username if i want)
+
+<role rolename="manager-gui"/>
+<role rolename="manager-script"/>
+<user username="admin" password="password" roles="manager-gui, manager-script"/>
+ 
+-------------------------------  
+cd ..
+cd bin
+./startup.sh
+now open tomcat on browser with the test <publicip:8080 0r i can change the port
+on tomcat console click on manager app (and it wont give access . to configure access to mager app do the following below
+
+why do we need to configure manager app -> we dont need to restart tomcat and because it makes it easier to see where our .war file is deployed on tomcat -> manager App console.
+
+in test server
+use:
+cd ..
+cd webapps/
+ls
+cd manager/
+ls
+cd META-INF
+ls
+nano context.xml  (scroll down to-> allow=<this a local defaultip > but we nee to change it so that it can be acessible from any ip.
+                   in the insert (".*") like this-> allow=".*"/> then manager app will be accessible)
+cd ..
+cd ..
+cd bin
+ls
+./shutdown.sh
+./startup.sh
+
+now go to test server tomcat on browser and click on -> manager App (and it will require the user role name and password we configer in the user.xml file.
+insert the username and password of (users.xml file) click sign in and it will log into manager App.
+
+         deploying of build code using jenking automation pipeline
+                we deploy into tomcat using complete ci/cd
+          -------------------------------------------------------
+8)  to deploy to tomcat we need to copy the .war file path to the tomcat webapp path
+    i) to get the path of .war file of our project go to -> workspace/git test/webapp/target .the use: pwd (to get the path.
+    ii) to get tomcat path of webapp go to -> apache-tomcat-10.0.27/webapps/ . the use: pwd (to get the path.
+    
+    
+
+
+    click on the test job or any node i want to deploy to -> click on configure ->scroll down to the build steps give a gap under mvn verify and
+    put in the script ->  pwd
+
+                          mvn verify
+
+                          cp /home/ubuntu/workspace/git test/webapp/target/webapp.war /home/ubuntu/apache-tomcat-10.0.27/webapps/
+  
+------------------------------------------------------------------------- then apply and save and build again and copy or deployment will be succesfull to confirm
+go to tomcat test server on browser use: <publicip:8080 . and click on-> manager i will see my webapps deployment visible . 
+
+
+
+                 automation set-up for contineous development without any manual intervention github and jenkins
+                                                    webhook
+                      ----------------------------------------------------------
+
+1) i need to integrate my git hub repo with jenkins using webhook.
+   i) first get my github token ready for pushing changes to my code from local repo.
+   ii) git clone the <git url repo> on jenkins (which is our first server.) server to make changes actuall this is a developer job we are just doing this for example sake.
+  
+   
+   next go to jenkins dashboard  create a new job with the following steps:
+    i) after creating a job the next page will show the configurations we need to make
+      click on ->restrict where this will run <and select the name of the new job> scroll down to source code management ->click on git . in the Repository url -> paste prokeck url
+      scroll down to Build triggers -> click on (GitHub hook trigger for GITScm polling) and save.
+
+   ii) next go to github account and click on the projeck repository -.click on setting ->click on webhook->create a webhook.
+   to create a webhook in the (payload URL) insert -> http://<jenkins server publicip:8080/github-webhook/
+   
+
+   after cloning the repository make changes to the out put if neccessary just for this example to enable a trigger when we push new changes to the remote github repo.
+   to make changes use:
+   cd <clone repo>
+   tree
+   cd webapp
+   cd src
+   cd main
+   cd webapps
+   ls
+   nano index.jsp  (add a change) now a new commit have to be made to repo
+
+   in the same jenkins server 
+   cd 
+   git status
+   git add .
+   git commit -m "new commit"
+   git remote add origin master <git project remote url>
+
+                   
+
+                 complete contineous integration, contineous delivery and continuous deployment
+            ----------------------------------------------------------------------------------------
+we need a jenkinrs server and in the jenkins server install--> maven,jenkins,java
+
+we also need a test server and prod server in both server install--> maven,tomcat,java.
+
+in the test server trigger git with a commit in the first job and trigger second job to build code with second job and send it to sonarqube to search for errors
+
+in the prod trigger first job with a git commit to github and this first job should trigger second commit to build code and second commit should trigger code to deploy on tomcat webapp on the same server.
+
+1) (first job)git commit setup on jenkins job:  create the job -> click on ->Restrict where this project can be run .->click on git ->insert project git url
+    next click on->  GitHub hook trigger for GITScm polling -> save and apply ->go to github and setup my weebhook. the first job is complete now if i make a commit to master branch of my code it will notify
+                                  
+2) (second job)trigger build job with first job : create a build job ->Restrict where this project can be run ->click on git ->insert project git url for project->next click on-> Build after other projects are built-> GitHub hook trigger for GITScm polling
+    next click on->Build Steps->Execute shell -> in the script insert-> cd /home/ubuntu/workspace/git
+                                                                           
+                                                                         give a gap in between just like this
+                                                                        
+                                                                        mvn clean verify
+                                                        -----------------------------------------------------
+
+  and if i check my workspace on my local server terminal i will see the .war file has been built.
+
+3) (third job)trigger tomcat deploy job with second job: create a build job ->Restrict where this project can be run ->click on git ->insert project git url for project->next click on-> Build after other projects are built-> GitHub hook trigger for GITScm polling
+    next click on->Build Steps->Execute shell -> in the script insert-> cp /home/ubuntu/workspace/git test/webapp/target/webapp.war /home/ubuntu/apache-tomcat-10.0.27/webapps/   apply and save.
+
+      just for reffrence remember to always configure tomcat manager app and ip address accessibility.
+                      and it will be deploy know that i can also do this ci/cd in 1 job.
+
+4) to install a build pipeline -> go to->manage jenkins->Available plugins-> plugin manager ->search for build pipeline . and install without restart ->go to dashboard->click on All + (new view) to create the pipeline view and select type->Build pipeline View
+   give name as-> cicd ->scroll down to->  Upstream / downstream config ->select initial jo as -> the fist job because that was the first job for he project
+
+5) setting user roles Read only for developers: first download user plugin in jenkins : go to->manage jenkins->Available plugins-> plugin manager ->search for Role-based Authorization Strategy ->install witout restart ->go back jenkins dashboard after installation
+   go to manage jenkins->click on->configure Global security -> scroll down to -> Authorization->select (Role-Based strategy) apply and save.  next go to ->manage and assign Roles->click on ->Assign Roles->in the Global roles user/Group to add->insert (developers / QA or any other )click on add
+   then go back to->mannage and assign roles ->click on -> manage roles->Role to add->insert developer->add and give only Read access for (overall and job)   save 
+   go to manage jenkins->click on->manage users ->create user->put in the information of the developer and create. go to mange jenkins ->manage and assign Roles in the user/group to add->insert name of the user created and click on add  .the check the developer checkbox for the user created.
+   save. to confirm if roles is working go to another browser and login into jenkins with the developer user information.go to fire fox copy <public jenjins ip:8080>

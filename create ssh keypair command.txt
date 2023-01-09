@@ -1,0 +1,16 @@
+git remote add origin git@github.com:drakeade/git-session.git
+   16  ssh-keygen
+   17  cd .ssh/
+   18  sudo cd .ssh/
+   19  ls
+   20  cd ..
+   21  cd .ssh/
+   22  ls
+   23  cat id_rsa.pub
+   24  cd ..
+   25  cd main
+   26  ls
+   27  cd git
+   28  ls
+   29  git push origin master
+   30  history

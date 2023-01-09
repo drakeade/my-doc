@@ -1,0 +1,6 @@
+(to install make configuration in a group )
+use:
+nano <any name of file> after pasting all the neccessary command
+
+use:
+bash <the name of the file>

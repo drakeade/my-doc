@@ -1,0 +1,4 @@
+access key=AKIARUQHSGSWMX6MQRE6 
+secrete access key = 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
+ssh -i downloads "nvirginia1.pem" ec2-user@ec2-3-84-5-145.compute-1.amazonaws.com
+chkconfig httpd on

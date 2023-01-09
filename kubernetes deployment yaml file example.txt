@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mrnginx
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: drakeade/new-nginx-img
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: mysecret
+
+-------------------------------
+deployment.yaml file to run two dependency container as shown below
+we can only use this as per the deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mrnginx
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: drakeade/new-nginx-img
+        ports:
+        - containerPort: 80
+      - name: apache
+        image: httpd
+        ports: 
+        - containerport:80
+

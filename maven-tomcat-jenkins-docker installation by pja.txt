@@ -1,0 +1,176 @@
+    pre-requsite
+  i) maven is dependent on jave to run perfectly
+
+1) sudo apt-get update
+
+2) sudo apt-get install default-jdk
+  to check java version
+  use:java --version
+
+3) sudo apt install maven
+
+4) to get maven version
+   use: mvn --version
+   
+5) to generate a sample project for maven (but in a real project i should be getting my code from
+                                            the developers)
+   use: mvn archetype:generate
+
+    when the requirment for sample project shows up
+    for : choose number use what ever number shows up
+    for : groupID use (genral)
+    for : artifactID use whatever name for the sample-project
+    for : version snapshot: use 0.1
+    for : package general : press enter
+now smaple project will be created
+
+6) sudo apt-get install tree
+   cd sample-project
+   ls
+   tree   (the tree command will show the created folder or directory structure of maven    
+   mvn validate (to validate the folder and codes
+   mvn compile  (to compile the the folders and download the dependencies all the .java file will be compiled to .class
+   tree
+   mvn test  (after the test is done the result folder will be in the among the project folder
+   mvn package (we get the executable file . that is .jar and .war file for our project
+   
+   when we want to update our source code to update our or install updated dependencies 
+   use:
+   mvn clean  (to clean the packages and dependencies
+   mvn package
+   mvn verify  (it does all the work at once it validate,compile,package,test and build
+   
+  
+       Real project clone repository of source code from git build with maven and deploy on tomcat
+       -------------------------------------------------------------------------------------------
+ 
+1) cd
+   git clone <git project url>
+   ls
+   cd <project name>
+   ls
+   tree
+   mvn clean
+   mvn verify
+   cd
+   sudo apt-get install wget
+   
+                    
+      tomcat is a "web server" and we can deploy our "web application" on tomcat
+      tomcat default port number is :8080
+
+2) to install latest version tomcat :always go to apache tomcat to get the version  and copy the tar.gz link
+   then :
+   cd
+   wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.27/bin/apache-tomcat-10.0.27.tar.gz
+   then to unzip tomcat or untar tomcat
+   tar xvfz apache-tomcat-10.0.27.tar.gz
+   cd apache-tomcat-10.0.27
+   cd bin
+   to start tomcat
+   ./startup.sh
+   checkout on browser if tomcat is started
+   use: <publicip:8080>
+   
+go back to server
+ 
+   cd .. (to comeout of bin
+   cd  conf
+   ls
+   if i want to change tomcat port number (in the server.xml file scroll down to connector port= and change number
+   it is important to change it because jenkins run on same port number and we cannot change jenkins port number.
+   Use: nano server.xml 
+   
+
+   also  configure the manager app on tomcat to be accessible
+   cd apache-tomcat-10.0.27 
+   ls
+   
+
+
+   cd 
+   if i change the port number i will have to restart tomcat 
+   use:
+   cd ..
+   cd bin
+   ls
+   ./shutdown.sh
+   ./startup.sh
+
+3) after retarting tomcat we need to deploy webapp.war from our build java project file into tomcat directory on webapps
+   cd to the "project directoy" : copy webapp.war file to tomcat webapps
+   use:
+   tree
+   cd webapp/
+   cd target/
+   ls
+   cp webapp.war /home/ubuntu/apache-tomcat-10.0.27/webapps/
+   
+   to confirm if it has been deployed in tomcat
+   cd into tomcat directory    
+   use:
+   cd
+   ls
+   cd apache-tomcat-10.0.27
+   ls
+   cd webapps/   (and you will get the copied webapp.war file in here. mission accomplished.
+   to confirm if it has been deploy successfully test it on browser
+   use:
+   <publicip:tomcat port number:/webapp/
+    this is how i can deploy a website on tomcat web server.
+
+        to view or edit the index.jsp file or index.html file go to
+  cd <project directory>
+  ls
+  cd webapp/
+  ls
+  cd src/
+  ls
+  cd main/
+  ls
+  cd webapp/
+  ls
+  cat index.jsp (to view
+  nano index.jsp  (to edit
+  
+
+   
+
+nano tomcat-users.xml
+
+<role rolename="manager-gui"/>
+<role rolename="manager-script"/>
+<user username="admin" password="password" roles="manager-gui, manager-script"/>
+apply and save
+
+cd bin
+./startup.sh
+============================================================================================
+
+sudo apt-get update
+
+sudo apt-get install default-jdk
+
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+
+sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ >  /etc/apt/sources.list.d/jenkins.list'
+
+sudo apt-get update
+
+sudo apt-get install jenkins -y
+
+sudo service jenkins status
+
+systemctl status jenkins
+
+sudo ufw allow 8080
+sudo cat
+
+sudo apt-get install docker.io
+
+sudo chmod 777 /var/run/docker.sock
+
+=========================================================================
+sudo docker rm -f $(sudo docker ps -a -q)
+sudo docker build /home/ubuntu/workspace/Test -t test
+sudo docker run -it -p 82:80 -d test

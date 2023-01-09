@@ -1,0 +1,262 @@
+                  installing docker on server and pulling images
+                  ----------------------------------------------
+
+    sudo apt-get update
+    sudo apt-get install docker.io
+ 
+to pull an image from docker default library
+use:
+sudo docker pull ubuntu
+sudo docker pull nginx
+ 
+to check list of images 
+use:
+sudo docker images
+    
+to run a docker image container and giving the container a name
+use:
+sudo docker run -it -d -p <8000:80> --name <any name for container> <image name>
+
+to check for containers
+use:
+sudo docker ps -a
+ 
+to get into the a container enviroment
+use:
+sudo docker exec -it <container name or id> bash
+
+to log in into docker ,jfrog or nexus, it will prompt for dockerhub user name and password to log in
+use:
+sudo docker login
+
+to save changes to a container or commit or make a container to an image 
+use:
+sudo docker commit <container name> <dockerhuber user name>/<new image name>
+
+to push new images to docker hub or any other platform 
+use:
+sudo docker push <hub user name>/<new image name>
+
+to stop or kill a container from running 
+use:
+sudo docker stop <container name or id>
+sudo docker kill <container name or id>
+
+to remove or delete a container permanently
+use:
+sudo docker rm <container name or id>
+
+          Docker volume
+          ------------
+to craete a persistent docker volume 
+use:
+sudo docker volume create <volume name>
+
+to list out volumes
+use:
+sudo docker volume ls
+
+to get more information on docker volume 
+use:
+sudo docker volume inspect <volume name>
+
+to delete docker volume 
+use:
+docker volume rm <volume name>
+
+to run container and mount a new volume
+use:
+sudo docker run -it -d -p 800:80 --name <new name for container> --mount source=<new volume name>,target=/vol <image name>
+
+next to confirm if its working go to or exec to the container
+use:
+sudo docker exec -it <container name> bash or sh
+
+ls
+cd vol
+next create an example log to test volume
+use:
+ echo >> "hello i am here" hello.log
+or nano hello.log
+EXIT
+
+then inspect the volume i mount to get the path
+use:
+sudo docker volume inspect <volume name>
+
+cat /var/<complete path>/hello.log
+
+one beautiful thing about persistent docker volume even if the container was deleted or stopped
+our logs are still intact and even if we mount it with another container it still have the 
+old logs intact.
+
+to get cntainer logs
+use:
+sudo docker logs <container id>    (or use: sudo docker logs -f <container id>
+to get logs for our container 
+use:
+sudo docker inspect --format={{.LogPath}} <container id>
+
+once i get the log path
+use:
+sudo grep error <the inspect format i got for container log>
+
+or use:
+tail -f `docker inspect --format={{.LogPath}} <container id>`
+
+in real production we have alot if containers running with different apps
+so to get the problem container or exited container
+use:
+sudo docker ps --filter="status=exited"
+   
+                      Dockerfile sample template
+
+(this is used for putting the code or source code for out apllication) 
+ nano index.html
+(this is used to create a Dockerfile)
+nano dockerfile
+
+--------------------------
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install apache2 -y
+ADD index.html /var/www/html
+ENTRYPOINT apachectl -D FOREGROUND
+
+dockerfile commands as follows
+-------------------------------
+to run dockerfile
+use:
+sudo docker build -t dockerfile .
+
+after running docker build we have to map the port number
+use:
+sudo docker run -it -d -p 5050:80 --name <new name> <dockerfile or any name i use for docker file>
+
+
+this is used for putting the code or source code for our application)  nano index.html
+  316  sudo docker build -t George-image .
+  317  history
+  318  sudo docker images
+  319  sudo docker run -it -d -p 8080:80 --name george-container george
+  320  nano index.html
+  321  sudo docker build -t mr container
+  322  sudo docker build -t mr container .
+  323  sudo docker build -t mr-container .
+  324  sudo docker images
+  326  sudo docker run -it -d -p 5050:80 --name mr-contain mr-container
+   17  sudo docker images
+   18  sudo docker push drakeade/my-ubuntu-custom
+   19  sudo docker rmi my-ubuntu-custom
+   20  sudo docker images
+   21  sudo docker ps -a
+   22  sudo docker exec -it staff bash
+   23  sudo docker commit staff drakeade/my-staff-nginx
+   24  sudo docker images
+   25  sudo docker push drakeade/my-staff-nginx
+   26  sudo docker images
+   27  sudo docker tag tomcat drakeade/tomcat
+   28  sudo docker images
+   29  sudo docker push drakeade/tomcat
+   30  sudo docker ps -a
+   31  sudo docker stop staff
+   32  sudo docker rm staff
+   33  sudo docker ps -a
+   34  sudo docker rmi drakeade/my-staff-nginx
+   35  sudo docker imaged
+   36  sudo docker images
+   37  sudo docker rmi drakeade/tomcat
+   38  sudo docker images
+   39  sudo docker run -it -d -p 8080:80 --name diamond ubuntu
+   40  sudo docker images
+   41  sudo docker ps -a
+   42  sudo docker pull apache2
+   43  sudo docker pull apache
+   44  sudo docker ps -a
+   45  sudo docker exec -it dc3f4ade6eb1
+   46  sudo docker exec -it dc3f4ade6eb1 bash
+   47  sudo docker commit diamond my-new-ubuntu-img
+   48  sudo docker images
+   49  sudo docker commit diamond drakeade/new-ubuntu-img
+   50  sudo docker images
+   51  sudo docker tag my-new-ubuntu-img drakeade/my-new-ubuntu-img
+   52  sudo docker images
+   53  sudo docker push drakeade/new-ubuntu-img
+   54  sudo docker push drakeade/my-new-ubuntu-img
+   55  clear
+   56  sudo docker images
+   57  sudo docker ps -a
+   58  sudo docker stop dc3f4ade6eb1
+   59  sudo docker rmi drakeade/new-ubuntu-img
+   60  sudo docker rmi drakeade/my-new-ubuntu-img
+   61  sudo docker images
+   62  sudo docker run -it -d -p 8000:80 --name base-nginx nginx
+   63  sudo docker images
+   64  sudo docker ps -a
+   65  sudo docker exec -it  base-nginx bash
+   66  sudo docker commit f6a351348a11 drakeade/new-nginx-img
+   67  sudo docker images
+   68  sudo docker push drakeade/new-nginx-img
+   69  sudo docker rmi drakeade/new-nginx-img
+   70  sudo docker tag my-new-ubuntu-img drakeade/my-new-ubuntu-img
+   71  sudo docker images
+   72  sudo docker rmi drakeade/my-new-ubuntu-img
+   73  sudo docker rmi my-new-ubuntu-img
+   74  sudo docker images
+   75  clear
+   76  sudo docker pull drakeade/new-nginx-img
+   77  ls
+   78  sudo docker images
+   79  sudo docker rmi drakeade/new-nginx-img
+   80  sudo docker images
+   81  sudo docker pull new-nginx-img
+   82  sudo docker pull drakeade/new-nginx-img
+   83  sudo docker images
+   84  sudo docker run -it -d drakeade/new-nginx-img
+   85  sudo docker ps
+   86  sudo docker stop base-nginx
+   87  sudo docker ps -a
+   88  history
+=======================
+
+
+(this is used for putting the code or source code for out apllication) 
+ nano index.html
+(this is used to create a Dockerfile)
+nano Dockerfile
+
+Dockerfile sample template
+--------------------------
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install apache2 -y
+ADD index.html /var/www/html
+ENTRYPOINT apachectl -D FOREGROUND
+
+docker file commands as follows
+-------------------------------
+
+sudo apt-get install docker.io
+
+(to loging to docker)
+sudo docker loging
+sudo docker login
+   
+
+      (this is used for putting the code or source code for our apllication)  nano index.html
+  316  sudo docker build -t George-image .
+  317  history
+  318  sudo docker images
+  319  sudo docker run -it -d -p 8080:80 --name george-container george
+  320  nano index.html
+  321  sudo docker build -t mr container
+  322  sudo docker build -t mr container .
+  323  sudo docker build -t mr-container .
+  324  sudo docker images
+  326  sudo docker run -it -d -p 5050:80 --name mr-contain mr-container
+  327  history
+==============
+to give a file different name and build use 
+-------------------------------------------
+sudo docker build -f <name-of-file> /home/ubuntu/ -t name-of-image
+

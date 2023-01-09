@@ -1,0 +1,268 @@
+(elk is dependent on java)
+
+for installing server use t2medium 25gb storage
+
+
+# Install Java
+
+sudo apt update
+
+sudo apt install openjdk-8-jdk
+
+
+
+----------------------------------------ElasticSearch--------------------------------------
+# Add Elastic repo
+
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+
+sudo apt install apt-transport-https
+
+echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee –a /etc/apt/sources.list.d/elastic-7.x.list
+
+           (Install Elasticsearch)
+
+sudo apt update
+
+sudo apt install elasticsearch
+
+# Configure Elasticsearch
+
+sudo vi /etc/elasticsearch/elasticsearch.yml
+
+Uncomment below lines in the elastichsearch.yml file,
+#network.host: 192.168.0.1 
+#http.port: 9200
+
+And make network host as 0.0.0.0
+network.host: 0.0.0.0
+
+add In the Discovery section of elasticsearch.yml, add below lines but first shift the comment section down
+discovery.type: single-node we can always add up the nodes depending on how many servers
+or node we want to get logs from.
+
+# Change the JVM heap size
+sudo vi /etc/elasticsearch/jvm.options
+shift the comment down and add this values under the -xmx4g
+use:
+-Xms1g
+-Xmx1g
+
+sudo service elasticsearch start
+
+sudo service elasticsearch status 
+
+
+# Test Elasticsearch if it is working on my server ip:
+use:
+curl -X GET "localhost:9200"
+
+
+
+----------------------------------------Kibana-------------------------------------------
+# Install Kibana
+sudo apt install kibana
+
+# Configure Kibana
+sudo vi /etc/kibana/kibana.yml
+
+Uncomment below lines
+#server.port: 5601
+#server.host: "your-hostname" or change to 0.0.0.0
+#elasticsearch.hosts: ["http://localhost:9200"]
+
+sudo service kibana start
+
+sudo service kibana status
+
+to check if kibana dashboard is working 
+use:
+http://<elk-server_ip>:5601
+
+
+
+--------------------------------------Logstash------------------------------------------
+# Install Logstash
+
+wget https://artifacts.elastic.co/downloads/logstash/logstash-8.4.3-linux-x86_64.tar.gz   
+
+ls
+
+(to untar the logstah download)
+use:
+
+tar xvf logstash-8.4.3-linux-x86_64.tar.gz 
+
+(then we move the untar logstash to /etc/logstash)
+use:
+sudo mv logstash-8.4.3 /etc/logstash 
+
+(Configure Logstash)
+sudo vi /etc/logstash/config/logstash.yml
+
+         (Below lines would be added at the first line give gap at the top and add the three lines))
+path.data: /var/lib/logstash
+path.config: /etc/logstash/config/*.conf
+path.logs: /var/log/logstash
+
+(next to get logstash logs)
+use:
+cd /etc/logstash/bin/
+
+then run logstash to get the logs
+use:
+sudo ./logstash
+ 
+
+               Install Filebeat
+               ----------------
+
+sudo apt install filebeat
+
+               Configure Filebeat
+               ------------------
+
+sudo vi /etc/filebeat/filebeat.yml
+
+we configuring this because we dont want filebeat to send logs to elasticsearch we 
+want filebeat to send logs to logstash
+
+Comment following lines in elasticsearch output section
+# output.elasticsearch:
+   # Array of hosts to connect to.
+   # hosts: ["localhost:9200"]
+
+Uncomment following lines under logstash output section
+# output.logstash
+     # hosts: ["localhost:5044"]
+
+sudo filebeat modules enable system
+
+sudo systemctl start filebeat
+
+sudo systemctl status filebeat
+
+# Test elastic search (to get all the indecies on elastic search)
+curl -XGET http://localhost:9200/_cat/indices?v
+
+filebeat have alot of modules for us to enable to get logs 
+but to get logs for our personal application 
+   elk is giving us the option to create custom module to collect logs from our personal application
+
+we will be using example to get logs from nginx.
+
+in other to live stream our logs on nginix
+
+sudo apt-get install nginx -y
+
+open inginx on browser with the <server ip>
+
+(go to filebeat yml modules to collect logs)
+use:
+cd /etc/filebeat/modules.d
+ls
+sudo filebeat modules enable nginx    ( i can also enable any default module or custom module) 
+
+apart from this listed modules like nginx we can create custom modules for our aplications
+to get logs of our custom application.
+
+to create default filebeat dashboard for real time data analizing . but make sure filebeat
+is running before i run this command. 
+use:
+sudo filebeat setup -e 
+
+next
+
+cat nginx.yml
+
+(next we need to create a filter for nginx on logstash in other to get nginx logs)
+use:
+cd /etc/logstash/config/
+ls
+sudo vi nginx.conf
+
+input { 
+	file {
+	path => "/var/log/nginx/access.log"
+	start_position => "beginning"
+	type => "logs"
+	}
+}
+
+filter { 
+	grok { 
+		match => { "message" => "%{IPORHOST:remote_ip} - %{DATA:user_name} \[%{HTTPDATE:access_time}\] \"%{WORD:http_method} %{DATA:url} HTTP/%{NUMBER:http_version}\" %{NUMBER:response_code} %{NUMBER:body_sent_bytes} \"%{DATA:referrer}\" \"%{DATA:agent}\"" }
+	}
+}
+
+output { 
+	stdout { codec => rubydebug}
+	elasticsearch {
+		hosts => ["http://0.0.0.0:9200"]
+		index => "nginx_access-%{+YYYY.MM.dd}"
+	}
+}
+
+next cd to logstash again
+
+cd ..
+cd bin
+ls
+ sudo ./logstash
+
+now if i check the index logs i will see that elasticsearch have save my nginx logs and it can also be a custom application arccording
+to requirments
+
+to check the index 
+use:
+curl -XGET http://localhost:9200/_cat/indices?v
+
+now we can display the nginx logs on kibana dashboard gui (graphical user interface)
+
+to log into kibana dashboard on browser
+use:
+http://<elk-server_ip>:5601
+
+when you are in kibana dashboard click explore on my own
+
+then on the right side click the navigation bottun and scroll down to stack management and 
+click on it.
+
+then click again on the right nav bar scroll down to kibana and click on index patterns.
+
+so i will click on create an index and give the app or server name in the name space but the example we are using
+is nginx so we use nginx.
+
+it will give (your index pattern matches 1 source. to show it is correct. only if thhis i showing up i can be able 
+to create my index.
+
+next click on the next option space tittled timestand feild and enter in the options
+(@timestamp)
+
+then click on create index pattern.
+
+once it is created click on the nav bar and go to discover this is where i can live stream 
+my logs.
+
+i have to logstash to get logs all the time.
+
+after getting logs to get my own ip click on the > of my server log and i will
+get the informations of that server and ip address.
+
+          next i need to add filter for remote_ip .
+
+in the (field) namspace scroll down and click on remote_ip and on the second (operator) namespace
+use (is) or (is not) depending on the requirement in the namespace
+then value paste the ip address i get from the log.
+
+we can also use another means of visualization on kibana on pie chat
+ to do that we click on the nav bar click on (visualize library) click on create new virtualization
+then scroll down and click on (aggregation based : click on explore options and choose pie) then click on
+the index i want . for this example is nginx. 
+
+note that we are trying to get the logs of who is trying to access or accessing my application.
+ 
+next click on buckets (+ Add) click on split slices and aggregation option should be (terms)
+field should be remote_ip.keyword . then metric: shoul be (count) . order option should be
+(Decending) , size (50) . then click on update.
+

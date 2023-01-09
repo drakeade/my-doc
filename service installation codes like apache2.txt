@@ -1,0 +1,4 @@
+to install apache2 / start apache2
+----------------------------------
+apt-get install apache2 -y
+service apache2 start
